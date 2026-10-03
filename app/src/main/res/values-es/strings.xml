@@ -57,4 +57,7 @@
     <string name="access_desc">Permite a PTT Puente saber qué app tienes delante y pulsar el botón de PTT de la pantalla de una app de radio mientras mantienes el PTT del micro. No lee el contenido de la pantalla.</string>
     <string name="learn_button">Aprender un botón PTT (y abre la app de radio antes de 5 s)</string>
     <string name="log_learn_wait">abre la app de radio: aprendiendo su botón PTT en %d s</string>
+    <string name="taught_hint">Se guardan solos y se usan automáticamente cuando esa app está delante: no hay que seleccionar nada. X / Y se pueden corregir a mano.</string>
+    <string name="add_manual">Añadir una app a mano</string>
+    <string name="add_manual_hint">Punto de la pantalla de su botón de PTT, en píxeles. Para leerlo: Opciones de desarrollador › Ubicación del puntero, y toca el botón.</string>
 </resources>

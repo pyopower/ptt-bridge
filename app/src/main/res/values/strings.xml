@@ -57,4 +57,7 @@
     <string name="access_desc">Lets PTT Bridge know which app is in the foreground and press a radio app\'s on-screen PTT button while the mic\'s PTT is held. It does not read screen content.</string>
     <string name="learn_button">Learn a PTT button (then open the radio app within 5 s)</string>
     <string name="log_learn_wait">open the radio app: learning its PTT button in %d s</string>
+    <string name="taught_hint">Saved automatically, and used automatically whenever that app is in front: nothing to select. X / Y can be corrected by hand.</string>
+    <string name="add_manual">Add an app by hand</string>
+    <string name="add_manual_hint">Screen point of its PTT button, in pixels. To read it: Developer options › Pointer location, then touch the button.</string>
 </resources>

@@ -84,8 +84,13 @@ class MainActivity : Activity(), BridgeService.Listener {
                 moveTaskToBack(true)              // out of the way: open the radio app
             }
         })
+        col.addView(small(R.string.taught_hint))
         taught = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         col.addView(taught)
+        col.addView(Button(this).apply {
+            setText(R.string.add_manual)
+            setOnClickListener { pickApp() }
+        })
 
         // ---- manual mode ----
         col.addView(title(R.string.manual_title))
@@ -189,14 +194,75 @@ class MainActivity : Activity(), BridgeService.Listener {
                 gravity = Gravity.CENTER_VERTICAL
             }
             row.addView(TextView(this).apply {
-                text = "${PttAccessibilityService.appLabel(this@MainActivity, pkg)}  (${p.first}, ${p.second})"
+                text = PttAccessibilityService.appLabel(this@MainActivity, pkg)
+                typeface = Typeface.DEFAULT_BOLD
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            // Editable X / Y: saved as you type.
+            var x = p.first; var y = p.second
+            row.addView(coord(x) { x = it; prefs.setPoint(pkg, x, y) })
+            row.addView(coord(y) { y = it; prefs.setPoint(pkg, x, y) })
             row.addView(Button(this).apply {
                 setText(R.string.forget)
                 setOnClickListener { prefs.forgetPoint(pkg); paintTaught() }
             })
             taught.addView(row)
         }
+    }
+
+    private fun coord(v: Int, set: (Int) -> Unit) = EditText(this).apply {
+        inputType = InputType.TYPE_CLASS_NUMBER
+        setText(v.toString())
+        minWidth = px(64)
+        addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(e: Editable?) { e?.toString()?.toIntOrNull()?.let(set) }
+            override fun beforeTextChanged(a: CharSequence?, b: Int, c: Int, d: Int) {}
+            override fun onTextChanged(a: CharSequence?, b: Int, c: Int, d: Int) {}
+        })
+    }
+
+    /** "Add by hand": pick an installed app, then type its PTT button's X/Y. */
+    private fun pickApp() {
+        val pm = packageManager
+        val apps = pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
+            .map { it.activityInfo.packageName to it.loadLabel(pm).toString() }
+            .filter { it.first != packageName }
+            .distinctBy { it.first }
+            .sortedBy { it.second.lowercase() }
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.add_manual)
+            .setItems(apps.map { it.second }.toTypedArray()) { _, i -> askPoint(apps[i].first, apps[i].second) }
+            .show()
+    }
+
+    private fun askPoint(pkg: String, label: String) {
+        val old = prefs.point(pkg)
+        val m = resources.displayMetrics
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(px(16), px(8), px(16), 0)
+        }
+        val ex = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER; hint = "X"
+            setText((old?.first ?: m.widthPixels / 2).toString())
+        }
+        val ey = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER; hint = "Y"
+            setText((old?.second ?: m.heightPixels * 9 / 10).toString())
+        }
+        box.addView(ex, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        box.addView(ey, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        android.app.AlertDialog.Builder(this)
+            .setTitle(label)
+            .setMessage(R.string.add_manual_hint)
+            .setView(box)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val x = ex.text.toString().toIntOrNull()
+                val y = ey.text.toString().toIntOrNull()
+                if (x != null && y != null) { prefs.setPoint(pkg, x, y); paintTaught() }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun px(v: Int) = (v * dp).toInt()
