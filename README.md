@@ -46,7 +46,7 @@ simulating the mic's keys over adb (`cmd media_session dispatch fast-forward` /
 | BlueDV AMBE 1.0.119 | ✅ root | physical key in the foreground: 27 (CAMERA), 131 (F1), 132 (F2), 134, 135, 139, 142, 228–230, 261, 276, 278, 280, 294, 300, 301, 305 | ✅ root key mode, code 27: "PTT ON" 73 ms after press, "PTT OFF" 24 ms after release |
 | Peanut 1.81 | ✅ root | key learned in its setup, in the foreground | not tested (same mechanism as BlueDV) |
 | Mumla 3.7.3 (Mumble) | ✅ root | push-to-talk key set in its settings, in the foreground | not tested (same mechanism as BlueDV) |
-| DroidStar | ⚠️ root | only its on-screen TX button: root screen-point mode | not verified: its TX button does not react while not connected |
+| DroidStar | ✅ root | only its on-screen TX button: root screen-point mode (turn off its TX toggle setting so the button is hold-to-talk) | ✅ on the air with the Abbree (BM, screen point on the TX button) |
 
 
 ## Install
@@ -72,6 +72,8 @@ Notes:
 - **+ / −** are the normal phone volume.
 - If the release is ever lost (mic out of range, flat battery), the bridge
   releases the PTT on its own after 180 s.
+- **DroidStar** stays on "connecting" without any message when no vocoder is
+  loaded: load one in its settings first.
 
 ## How it works
 
