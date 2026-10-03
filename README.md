@@ -16,11 +16,38 @@ and release:
 | Target | Press | Release |
 |---|---|---|
 | DVSwitch Mobile | `org.dvswitch.intent.action.PTT_KEY_DOWN` | `org.dvswitch.intent.action.PTT_KEY_UP` |
-| Generic POC apps | `android.intent.action.PTT.down` | `android.intent.action.PTT.up` |
+| EchoLink | `com.echolink.ptt.down` | `com.echolink.ptt.up` |
+| VoxDMR | `com.voxdmr.ptt.DOWN` | `com.voxdmr.ptt.UP` |
 | Zello | `com.zello.ptt.down` | `com.zello.ptt.up` |
+| Generic POC apps | `android.intent.action.PTT.down` | `android.intent.action.PTT.up` |
 
-Tested with an Abbree speaker-mic and DVSwitch Mobile 2.0.7 on a OnePlus 8T
-(Android 16).
+Broadcasts to known apps are addressed to their package: since Android 8 an
+implicit broadcast does not reach receivers declared in a manifest (EchoLink's
+are), and an addressed one even starts the app's receiver when it is closed.
+
+For apps that only read a physical key or their own on-screen button there is
+an optional **root mode**: hold a key code, or hold a point of the screen
+(the app's PTT button), while the mic's PTT is pressed. It needs root and the
+radio app in the foreground with the screen on, because Android delivers keys
+and touches only to the focused window.
+
+## Compatibility
+
+Found by decompiling each app, then tested on a OnePlus 8T (Android 16) by
+simulating the mic's keys over adb (`cmd media_session dispatch fast-forward` /
+`rewind`) and, for DVSwitch, with the real Abbree on the air.
+
+| App (version) | Works | How | Tested |
+|---|---|---|---|
+| DVSwitch Mobile 2.0.7 | ✅ | own intent (also the generic one) | ✅ on the air with the Abbree |
+| EchoLink 1.8.10 | ✅ | own intent, manifest receiver (setting "pttButton", on by default) | ✅ receives DOWN/UP (`startTx()`/`stopTX()`), even with the app closed |
+| VoxDMR 0.15.3 | ✅ | own intent (also generic and Zello's) | ✅ receives DOWN/UP ("Ext PTT down/up"), even with the app closed |
+| Zello | ✅ | `com.zello.ptt.*` (documented by Zello) | not tested |
+| BlueDV AMBE 1.0.119 | ✅ root | physical key in the foreground: 27 (CAMERA), 131 (F1), 132 (F2), 134, 135, 139, 142, 228–230, 261, 276, 278, 280, 294, 300, 301, 305 | ✅ root key mode, code 27: "PTT ON" 73 ms after press, "PTT OFF" 24 ms after release |
+| Peanut 1.81 | ✅ root | key learned in its setup, in the foreground | not tested (same mechanism as BlueDV) |
+| Mumla 3.7.3 (Mumble) | ✅ root | push-to-talk key set in its settings, in the foreground | not tested (same mechanism as BlueDV) |
+| DroidStar | ⚠️ root | only its on-screen TX button: root screen-point mode | not verified: its TX button does not react while not connected |
+
 
 ## Install
 
@@ -98,9 +125,10 @@ nada.
 
 PTT Bridge (en español, "PTT Puente") es una app mínima (≈40 KB, sin librerías)
 que recoge esas teclas y las reenvía como los avisos de PTT que escuchan las
-apps de radio, con pulsar y soltar por separado (ver la tabla de arriba).
-
-Probada con un Abbree y DVSwitch Mobile 2.0.7 en un OnePlus 8T (Android 16).
+apps de radio, con pulsar y soltar por separado. Funciona con DVSwitch,
+EchoLink, VoxDMR y Zello sin root; con BlueDV, Peanut, Mumla y DroidStar, con
+el **modo root** opcional (mantiene pulsada una tecla o un punto de la pantalla,
+con la app de radio delante). Ver las tablas de arriba.
 
 ### Uso
 
