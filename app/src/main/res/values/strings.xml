@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PTT Bridge</string>
+    <string name="state_off">OFF</string>
+    <string name="state_idle">Standby</string>
+    <string name="state_tx">● PTT</string>
+    <string name="send_to">Send the mic\'s PTT to:</string>
+    <string name="reclaim">Keep the buttons (reclaim every 3 s)</string>
+    <string name="turn_on">Turn the bridge on</string>
+    <string name="turn_off">Turn the bridge off</string>
+    <string name="hint">Fully close any other app that uses the mic\'s PTT: Android delivers the buttons to only one app. On the Abbree, the P1 button makes Android redial the last number; don\'t use it.</string>
+    <string name="notif_channel">PTT bridge</string>
+    <string name="notif_active">PTT bridge active</string>
+    <string name="notif_tx">PTT pressed</string>
+    <string name="notif_none">no app</string>
+    <string name="log_started">bridge started</string>
+    <string name="log_stopped">bridge stopped</string>
+    <string name="log_down">PTT down → %d app(s)</string>
+    <string name="log_up">PTT up (%1$s, %2$.1f s)</string>
+    <string name="why_release">release</string>
+    <string name="why_stop">bridge stopped</string>
+    <string name="why_timeout">%d s timeout</string>
+    <string name="target_poc">Generic POC</string>
+</resources>

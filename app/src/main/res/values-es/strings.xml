@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PTT Puente</string>
+    <string name="state_off">APAGADO</string>
+    <string name="state_idle">En espera</string>
+    <string name="state_tx">● PTT</string>
+    <string name="send_to">Mandar el PTT del micro a:</string>
+    <string name="reclaim">Quedarse los botones (reclamar cada 3 s)</string>
+    <string name="turn_on">Encender el puente</string>
+    <string name="turn_off">Apagar el puente</string>
+    <string name="hint">Cierra del todo las otras apps que usen el PTT del micro: Android solo entrega los botones a una. En el Abbree, el botón P1 hace que Android rellame al último número; no lo uses.</string>
+    <string name="notif_channel">Puente PTT</string>
+    <string name="notif_active">Puente PTT activo</string>
+    <string name="notif_tx">PTT pulsado</string>
+    <string name="notif_none">ninguna app</string>
+    <string name="log_started">puente en marcha</string>
+    <string name="log_stopped">puente parado</string>
+    <string name="log_down">PTT abajo → %d app(s)</string>
+    <string name="log_up">PTT arriba (%1$s, %2$.1f s)</string>
+    <string name="why_release">soltado</string>
+    <string name="why_stop">parada del puente</string>
+    <string name="why_timeout">tope de %d s</string>
+    <string name="target_poc">POC genérico</string>
+</resources>
