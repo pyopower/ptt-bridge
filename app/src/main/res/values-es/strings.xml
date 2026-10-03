@@ -21,4 +21,15 @@
     <string name="why_stop">parada del puente</string>
     <string name="why_timeout">tope de %d s</string>
     <string name="target_poc">POC genérico</string>
+    <string name="why_test">prueba</string>
+    <string name="test">Probar (pulsación de 1 s)</string>
+    <string name="root_title">Modo root (opcional)</string>
+    <string name="root_hint">Para apps que solo leen una tecla física o su botón de pantalla (BlueDV, Peanut, Mumla, DroidStar). Necesita root, y la app de radio delante con la pantalla encendida.</string>
+    <string name="root_off">Apagado</string>
+    <string name="root_key">Mantener una tecla</string>
+    <string name="root_touch">Mantener un punto de la pantalla</string>
+    <string name="root_keycode">Código de tecla</string>
+    <string name="root_x">X (px)</string>
+    <string name="root_y">Y (px)</string>
+    <string name="root_keys">BlueDV toma como PTT la 27 (CÁMARA), la 131 (F1) o la 132 (F2). En Peanut y Mumla, configura su tecla de PTT y pulsa el PTT del micro cuando la pidan. Para el punto de pantalla, activa Opciones de desarrollador › Ubicación del puntero y lee X/Y sobre el botón de PTT de la app de radio.</string>
 </resources>

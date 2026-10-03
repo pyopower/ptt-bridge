@@ -45,11 +45,13 @@ class BridgeService : Service() {
     private val main = Handler(Looper.getMainLooper())
     private var session: MediaSession? = null
     private lateinit var prefs: Prefs
+    private lateinit var root: RootInput
 
     override fun onCreate() {
         super.onCreate()
         instance = this
         prefs = Prefs(this)
+        root = RootInput(prefs)
         createChannel()
         startInForeground()
         openSession()
@@ -72,6 +74,7 @@ class BridgeService : Service() {
         try { session?.release() } catch (_: Exception) {}
         session = null
         stopSilence()
+        root.shutdown()
         instance = null
         log(getString(R.string.log_stopped))
         super.onDestroy()
@@ -152,10 +155,16 @@ class BridgeService : Service() {
             if (!prefs.enabled(t.key)) continue
             // FOREGROUND = the fast broadcast queue. Without it DVSwitch got
             // the PTT half a second late.
-            sendBroadcast(Intent(if (down) t.down else t.up)
-                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES or Intent.FLAG_RECEIVER_FOREGROUND))
+            val i = Intent(if (down) t.down else t.up)
+                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES or Intent.FLAG_RECEIVER_FOREGROUND)
+            // Since Android 8 an implicit broadcast does not reach receivers
+            // declared in a manifest (EchoLink's are), so apps we know get it
+            // addressed to their package, which reaches both kinds.
+            if (t.pkg != null) i.setPackage(t.pkg)
+            sendBroadcast(i)
             n++
         }
+        n += root.press(down)
         return n
     }
 
@@ -185,6 +194,16 @@ class BridgeService : Service() {
             main.postDelayed({ if (pressed && prefs.reclaim) reclaimButtons() }, t)
         main.removeCallbacks(reclaimer)              // then at the TX pace
         main.postDelayed(reclaimer, RECLAIM_TX_MS)
+    }
+
+    /** Error of the root shell, if any, for the screen. */
+    val rootError: String? get() = root.error
+
+    /** "Test" button: a 1 s press through the same path as the mic. */
+    fun test() {
+        if (pressed) return
+        press()
+        main.postDelayed({ release(getString(R.string.why_test)) }, 1000)
     }
 
     fun reclaimButtons() {
@@ -237,8 +256,9 @@ class BridgeService : Service() {
             PendingIntent.FLAG_IMMUTABLE)
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, CHANNEL)
                 else @Suppress("DEPRECATION") Notification.Builder(this)
-        val to = TARGETS.filter { prefs.enabled(it.key) }
-            .joinToString(", ") { it.name(this) }
+        val to = (TARGETS.filter { prefs.enabled(it.key) }.map { it.name(this) } +
+                  listOfNotNull(if (prefs.rootMode != RootInput.MODE_OFF) "root" else null))
+            .joinToString(", ")
             .ifEmpty { getString(R.string.notif_none) }
         return b.setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentTitle(getString(if (pressed) R.string.notif_tx else R.string.notif_active))
@@ -279,15 +299,21 @@ class BridgeService : Service() {
         /** A radio app the PTT can be sent to. `label` is a string resource
          *  for names that get translated, 0 for brand names. */
         class Target(val key: String, private val brand: String, private val label: Int,
-                     val down: String, val up: String) {
+                     val pkg: String?, val down: String, val up: String) {
             fun name(c: Context) = if (label != 0) c.getString(label) else brand
         }
+        /* Found by decompiling each app (see README). The generic POC one is
+           sent to nobody in particular: many POC apps listen to it. */
         val TARGETS = listOf(
-            Target("dvswitch", "DVSwitch", 0,
+            Target("dvswitch", "DVSwitch", 0, "org.dvswitch",
                 "org.dvswitch.intent.action.PTT_KEY_DOWN", "org.dvswitch.intent.action.PTT_KEY_UP"),
-            Target("poc", "", R.string.target_poc,
+            Target("echolink", "EchoLink", 0, "org.echolink.android",
+                "com.echolink.ptt.down", "com.echolink.ptt.up"),
+            Target("voxdmr", "VoxDMR", 0, "com.jcalado.voxdmr",
+                "com.voxdmr.ptt.DOWN", "com.voxdmr.ptt.UP"),
+            Target("zello", "Zello", 0, "com.loudtalks", "com.zello.ptt.down", "com.zello.ptt.up"),
+            Target("poc", "", R.string.target_poc, null,
                 "android.intent.action.PTT.down", "android.intent.action.PTT.up"),
-            Target("zello", "Zello", 0, "com.zello.ptt.down", "com.zello.ptt.up"),
         )
 
         @Volatile var instance: BridgeService? = null; private set

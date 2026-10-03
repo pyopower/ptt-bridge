@@ -9,7 +9,11 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
+import android.text.InputType
 import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -55,6 +59,53 @@ class MainActivity : Activity(), BridgeService.Listener {
             isChecked = prefs.reclaim
             setOnCheckedChangeListener { _, on -> prefs.reclaim = on }
         })
+        // ---- root mode, for apps that only read a key or their screen ----
+        col.addView(TextView(this).apply {
+            setText(R.string.root_title)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, (16 * dp).toInt(), 0, 0)
+        })
+        col.addView(TextView(this).apply {
+            setText(R.string.root_hint)
+            textSize = 12f
+        })
+        val modes = intArrayOf(R.string.root_off, R.string.root_key, R.string.root_touch)
+        col.addView(RadioGroup(this).apply {
+            for ((i, m) in modes.withIndex())
+                addView(RadioButton(this@MainActivity).apply { id = 100 + i; setText(m) })
+            check(100 + prefs.rootMode)
+            setOnCheckedChangeListener { _, id -> prefs.rootMode = id - 100 }
+        })
+        fun number(label: Int, get: () -> Int, set: (Int) -> Unit) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            row.addView(TextView(this).apply { setText(label); minWidth = (110 * dp).toInt() })
+            row.addView(EditText(this).apply {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                setText(get().toString())
+                minWidth = (100 * dp).toInt()
+                setOnFocusChangeListener { _, has -> if (!has) text.toString().toIntOrNull()?.let(set) }
+                addTextChangedListener(object : android.text.TextWatcher {
+                    override fun afterTextChanged(e: android.text.Editable?) {
+                        e?.toString()?.toIntOrNull()?.let(set)
+                    }
+                    override fun beforeTextChanged(a: CharSequence?, b: Int, c: Int, d: Int) {}
+                    override fun onTextChanged(a: CharSequence?, b: Int, c: Int, d: Int) {}
+                })
+            })
+            col.addView(row)
+        }
+        number(R.string.root_keycode, { prefs.keyCode }, { prefs.keyCode = it })
+        number(R.string.root_x, { prefs.touchX }, { prefs.touchX = it })
+        number(R.string.root_y, { prefs.touchY }, { prefs.touchY = it })
+        col.addView(TextView(this).apply {
+            setText(R.string.root_keys)
+            textSize = 12f
+        })
+        col.addView(Button(this).apply {
+            setText(R.string.test)
+            setOnClickListener { BridgeService.instance?.test() }
+        })
+
         button = Button(this).apply {
             setOnClickListener {
                 prefs.on = BridgeService.instance == null
@@ -105,6 +156,7 @@ class MainActivity : Activity(), BridgeService.Listener {
         }
         light.setTextColor(Color.WHITE)
         button.setText(if (s == null) R.string.turn_on else R.string.turn_off)
-        events.text = synchronized(BridgeService.events) { BridgeService.events.joinToString("\n") }
+        val err = s?.rootError?.let { "root: $it\n" } ?: ""
+        events.text = err + synchronized(BridgeService.events) { BridgeService.events.joinToString("\n") }
     }
 }

@@ -21,4 +21,15 @@
     <string name="why_stop">bridge stopped</string>
     <string name="why_timeout">%d s timeout</string>
     <string name="target_poc">Generic POC</string>
+    <string name="why_test">test</string>
+    <string name="test">Test (1 s press)</string>
+    <string name="root_title">Root mode (optional)</string>
+    <string name="root_hint">For apps that only read a physical key or their on-screen button (BlueDV, Peanut, Mumla, DroidStar). Needs root, and the radio app in the foreground with the screen on.</string>
+    <string name="root_off">Off</string>
+    <string name="root_key">Hold a key</string>
+    <string name="root_touch">Hold a screen point</string>
+    <string name="root_keycode">Key code</string>
+    <string name="root_x">X (px)</string>
+    <string name="root_y">Y (px)</string>
+    <string name="root_keys">BlueDV takes 27 (CAMERA), 131 (F1) or 132 (F2) as PTT. In Peanut and Mumla, set their PTT key and press the mic\'s PTT while they wait for it. For the screen point, turn on Developer options › Pointer location and read X/Y on the radio app\'s PTT button.</string>
 </resources>
