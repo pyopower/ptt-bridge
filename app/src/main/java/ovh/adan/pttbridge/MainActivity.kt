@@ -32,6 +32,7 @@ class MainActivity : Activity(), BridgeService.Listener {
     private lateinit var button: Button
     private lateinit var access: TextView
     private lateinit var taught: LinearLayout
+    private lateinit var radios: LinearLayout
     private var dp = 1f
 
     override fun onCreate(b: Bundle?) {
@@ -50,6 +51,10 @@ class MainActivity : Activity(), BridgeService.Listener {
             setPadding(0, px(24), 0, px(24))
         }
         col.addView(light)
+
+        // ---- open a radio app (on Android TV phone apps are not in the launcher) ----
+        radios = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        col.addView(radios)
 
         // ---- mode ----
         col.addView(title(R.string.mode_title))
@@ -156,6 +161,7 @@ class MainActivity : Activity(), BridgeService.Listener {
         BridgeService.listener = this
         BridgeService.instance?.reclaimButtons()
         paintTaught()
+        paintRadios()
         paint()
     }
 
@@ -181,6 +187,29 @@ class MainActivity : Activity(), BridgeService.Listener {
         val err = s?.rootError?.let { "root: $it\n" } ?: ""
         events.text = err + synchronized(BridgeService.events) { BridgeService.events.joinToString("\n") }
         if (taught.childCount != prefs.taughtApps().size.coerceAtLeast(1)) paintTaught()
+    }
+
+    /** Buttons to open the installed radio apps the bridge knows or was taught. */
+    private fun paintRadios() {
+        radios.removeAllViews()
+        val pkgs = (BridgeService.TARGETS.mapNotNull { it.pkg } + prefs.taughtApps()).distinct()
+            .filter { packageManager.getLaunchIntentForPackage(it) != null ||
+                      packageManager.getLeanbackLaunchIntentForPackage(it) != null }
+        if (pkgs.isEmpty()) return
+        radios.addView(title(R.string.open_radio))
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        for (pkg in pkgs) {
+            row.addView(Button(this).apply {
+                text = PttAccessibilityService.appLabel(this@MainActivity, pkg)
+                isAllCaps = false
+                setOnClickListener {
+                    val i = packageManager.getLaunchIntentForPackage(pkg)
+                        ?: packageManager.getLeanbackLaunchIntentForPackage(pkg)
+                    if (i != null) startActivity(i)
+                }
+            })
+        }
+        radios.addView(android.widget.HorizontalScrollView(this).apply { addView(row) })
     }
 
     private fun paintTaught() {

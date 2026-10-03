@@ -60,4 +60,5 @@
     <string name="taught_hint">Saved automatically, and used automatically whenever that app is in front: nothing to select. X / Y can be corrected by hand.</string>
     <string name="add_manual">Add an app by hand</string>
     <string name="add_manual_hint">Screen point of its PTT button, in pixels. To read it: Developer options › Pointer location, then touch the button.</string>
+    <string name="open_radio">Open a radio app</string>
 </resources>

@@ -60,4 +60,5 @@
     <string name="taught_hint">Se guardan solos y se usan automáticamente cuando esa app está delante: no hay que seleccionar nada. X / Y se pueden corregir a mano.</string>
     <string name="add_manual">Añadir una app a mano</string>
     <string name="add_manual_hint">Punto de la pantalla de su botón de PTT, en píxeles. Para leerlo: Opciones de desarrollador › Ubicación del puntero, y toca el botón.</string>
+    <string name="open_radio">Abrir app de radio</string>
 </resources>

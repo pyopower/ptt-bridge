@@ -122,6 +122,16 @@ Measured with `btmon` on Linux and on Android:
 | A2DP + AVRCP + HFP (a phone) | AVRCP FAST FORWARD on press (tap + ~0.5 s hold), REWIND on release | HFP `AT+BLDN` | volume |
 | HFP only | HFP `AT+BLDN` on press and again on release | — | `AT+VGS` |
 
+## Android TV
+
+Works on Android TV too (tested on a Chromecast with Google TV, Android TV 14):
+the Abbree pairs as speaker **and microphone** (hands-free profile), its PTT
+reaches the bridge, and DVSwitch Mobile transmitted with it. The bridge shows
+up in the TV's app list, and its screen has an *Open a radio app* row, because
+phone apps like DVSwitch are not listed in the TV launcher. Install the APKs
+with adb; turn on the accessibility service from adb or Settings ›
+Accessibility.
+
 ## Other speaker-mics
 
 If your mic sends other keys, run `adb logcat` while pressing it and open an
