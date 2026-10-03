@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Suspension bridge with radio waves on the towers: the app bridges the mic to radio apps. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="80" android:viewportHeight="80">
+    <group android:translateX="-14" android:translateY="-12">
+    <path android:pathData="M38.5,32 Q54,72 69.5,32 M38.5,32 Q30,52 19,66 M69.5,32 Q78,52 89,66" android:strokeColor="#FFFFFF" android:strokeWidth="3.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M46,46.6 V66 M54,52 V66 M62,46.6 V66 M29.4,50.5 V66 M78.6,50.5 V66" android:strokeColor="#FFFFFF" android:strokeWidth="2.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M37.5,30 h2 a1.5,1.5 0 0 1 1.5,1.5 v43 a1.5,1.5 0 0 1 -1.5,1.5 h-2 a1.5,1.5 0 0 1 -1.5,-1.5 v-43 a1.5,1.5 0 0 1 1.5,-1.5 z M68.5,30 h2 a1.5,1.5 0 0 1 1.5,1.5 v43 a1.5,1.5 0 0 1 -1.5,1.5 h-2 a1.5,1.5 0 0 1 -1.5,-1.5 v-43 a1.5,1.5 0 0 1 1.5,-1.5 z" android:fillColor="#FFFFFF"/>
+    <path android:pathData="M20,66 h68 a2,2 0 0 1 2,2 v1 a2,2 0 0 1 -2,2 h-68 a2,2 0 0 1 -2,-2 v-1 a2,2 0 0 1 2,-2 z" android:fillColor="#FFFFFF"/>
+    <path android:pathData="M34.40,25.13 A5,5 0 0 1 42.60,25.13 M31.61,22.21 A9,9 0 0 1 45.39,22.21 M65.40,25.13 A5,5 0 0 1 73.60,25.13 M62.61,22.21 A9,9 0 0 1 76.39,22.21" android:strokeColor="#FFFFFF" android:strokeWidth="2.6" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    </group>
+</vector>

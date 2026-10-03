@@ -365,7 +365,7 @@ class BridgeService : Service() {
                   listOfNotNull(if (prefs.rootMode != RootInput.MODE_OFF) "root" else null))
             .joinToString(", ")
             .ifEmpty { getString(R.string.notif_none) }
-        b.setSmallIcon(android.R.drawable.ic_btn_speak_now)
+        b.setSmallIcon(R.drawable.ic_notif)
             .setContentTitle(getString(if (pressed) R.string.notif_tx else R.string.notif_active))
             .setContentText("PTT → $to")
             .setContentIntent(open)
