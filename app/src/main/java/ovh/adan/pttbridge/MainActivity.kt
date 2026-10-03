@@ -76,6 +76,14 @@ class MainActivity : Activity(), BridgeService.Listener {
 
         // ---- taught screen buttons ----
         col.addView(title(R.string.taught_title))
+        col.addView(Button(this).apply {
+            setText(R.string.learn_button)
+            setOnClickListener {
+                prefs.universal = true
+                BridgeService.instance?.learnLater()
+                moveTaskToBack(true)              // out of the way: open the radio app
+            }
+        })
         taught = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         col.addView(taught)
 

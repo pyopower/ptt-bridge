@@ -25,11 +25,38 @@ Broadcasts to known apps are addressed to their package: since Android 8 an
 implicit broadcast does not reach receivers declared in a manifest (EchoLink's
 are), and an addressed one even starts the app's receiver when it is closed.
 
-For apps that only read a physical key or their own on-screen button there is
-an optional **root mode**: hold a key code, or hold a point of the screen
-(the app's PTT button), while the mic's PTT is pressed. It needs root and the
-radio app in the foreground with the screen on, because Android delivers keys
-and touches only to the focused window.
+## Universal mode (default)
+
+The bridge looks at the radio app in use (the one in front, or the last one
+used when the home screen is in front or the screen is off) and picks the best
+method by itself, with no setting to change when you switch apps:
+
+1. **Its PTT intent**, if it has one (table above): works in the background and
+   with the screen off.
+2. **Its on-screen PTT button, held down without root**, if you taught it: an
+   accessibility service keeps a finger on the button while the mic's PTT is
+   pressed. Works with any app that has a hold-to-talk button on screen
+   (Mumla, Peanut, BlueDV, DroidStar...). Needs the app in front and the
+   screen on.
+3. **Root mode** (optional), if set: hold a key code or a screen point.
+4. Otherwise, **every PTT intent known**, for whatever app listens.
+
+**Teaching a button:** in PTT Bridge tap *Learn a PTT button* and open the radio
+app within 5 s (or, with the radio app in front, expand the bridge's
+notification and tap *Learn PTT button*). A see-through blue layer appears: tap
+the app's PTT button on it. Done once per app.
+
+**The accessibility service** (Settings › Accessibility › PTT Bridge) is what
+lets the bridge know the app in front and press screen buttons. It reads no
+screen content. Two Android quirks with apps installed from outside the Play
+Store:
+- Android 13+ greys the switch out ("restricted setting"): open
+  Settings › Apps › PTT Bridge, ⋮ menu › *Allow restricted settings*, then turn
+  the service on.
+- **Updating the app turns the service off**: turn it back on after each update.
+
+Manual mode keeps the old behaviour: send to the ticked apps, plus root mode if
+set.
 
 ## Compatibility
 
@@ -45,8 +72,8 @@ simulating the mic's keys over adb (`cmd media_session dispatch fast-forward` /
 | Zello | ✅ | `com.zello.ptt.*` (documented by Zello) | not tested |
 | BlueDV AMBE 1.0.119 | ✅ root | physical key in the foreground: 27 (CAMERA), 131 (F1), 132 (F2), 134, 135, 139, 142, 228–230, 261, 276, 278, 280, 294, 300, 301, 305 | ✅ root key mode, code 27: "PTT ON" 73 ms after press, "PTT OFF" 24 ms after release |
 | Peanut 1.81 | ✅ root | key learned in its setup, in the foreground | not tested (same mechanism as BlueDV) |
-| Mumla 3.7.3 (Mumble) | ✅ root | push-to-talk key set in its settings, in the foreground | not tested (same mechanism as BlueDV) |
-| DroidStar | ✅ root | only its on-screen TX button: root screen-point mode (turn off its TX toggle setting so the button is hold-to-talk) | ✅ on the air with the Abbree (BM, screen point on the TX button) |
+| Mumla 3.7.3 (Mumble) | ✅ | on-screen PTT button (set *Transmission mode: Push to talk*), taught in the universal mode; or root key | ✅ on the air with the Abbree, **without root** |
+| DroidStar | ✅ root | only its on-screen TX button: root screen-point mode (turn off its TX toggle setting so the button is hold-to-talk); the no-root taught button should work too | ✅ root mode on the air with the Abbree; no-root not confirmed yet |
 
 
 ## Install
@@ -125,12 +152,22 @@ conectado a un móvil, manda el PTT por AVRCP como **AVANCE RÁPIDO al pulsar** 
 **RETROCESO al soltar**. Las apps de radio ignoran esas teclas y el botón no hace
 nada.
 
-PTT Bridge (en español, "PTT Puente") es una app mínima (≈40 KB, sin librerías)
+PTT Bridge (en español, "PTT Puente") es una app mínima (≈50 KB, sin librerías)
 que recoge esas teclas y las reenvía como los avisos de PTT que escuchan las
-apps de radio, con pulsar y soltar por separado. Funciona con DVSwitch,
-EchoLink, VoxDMR y Zello sin root; con BlueDV, Peanut, Mumla y DroidStar, con
-el **modo root** opcional (mantiene pulsada una tecla o un punto de la pantalla,
-con la app de radio delante). Ver las tablas de arriba.
+apps de radio, con pulsar y soltar por separado.
+
+**Modo universal** (por defecto): el puente mira qué app de radio usas (la de
+delante, o la última si estás en el escritorio o con la pantalla apagada) y
+elige solo el método: su intent de PTT si lo tiene (DVSwitch, EchoLink, VoxDMR,
+Zello: funciona con la pantalla apagada), o **mantener pulsado su botón de PTT
+de la pantalla sin root** si se lo enseñaste (Mumla, Peanut, BlueDV,
+DroidStar...). Para enseñarlo: en PTT Puente toca *Aprender un botón PTT*, abre
+la app de radio antes de 5 s y toca su botón de PTT en la capa azul.
+
+Necesita activar el **servicio de accesibilidad** de PTT Puente (no lee el
+contenido de la pantalla). En Android 13+, si el interruptor sale gris: Ajustes
+› Apps › PTT Puente › menú ⋮ › *Permitir ajustes restringidos*. **Al actualizar
+la app, Android lo desactiva**: vuelve a activarlo.
 
 ### Uso
 

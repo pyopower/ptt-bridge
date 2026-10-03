@@ -51,8 +51,10 @@
     <string name="access_off">Servicio de accesibilidad: DESACTIVADO (hace falta para saber qué app hay delante y pulsar botones de pantalla)</string>
     <string name="access_open">Abrir ajustes de accesibilidad</string>
     <string name="taught_title">Botones de pantalla aprendidos</string>
-    <string name="taught_none">Ninguno todavía. Abre la app de radio, baja la notificación y toca "Aprender botón PTT", y luego toca su botón de PTT.</string>
+    <string name="taught_none">Ninguno todavía. Pulsa el botón de arriba y abre la app de radio, o baja la notificación y toca "Aprender botón PTT" con la app de radio delante. Luego toca su botón de PTT en la capa azul.</string>
     <string name="forget">Olvidar</string>
     <string name="manual_title">Modo manual</string>
     <string name="access_desc">Permite a PTT Puente saber qué app tienes delante y pulsar el botón de PTT de la pantalla de una app de radio mientras mantienes el PTT del micro. No lee el contenido de la pantalla.</string>
+    <string name="learn_button">Aprender un botón PTT (y abre la app de radio antes de 5 s)</string>
+    <string name="log_learn_wait">abre la app de radio: aprendiendo su botón PTT en %d s</string>
 </resources>

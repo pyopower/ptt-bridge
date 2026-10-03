@@ -251,6 +251,13 @@ class BridgeService : Service() {
         return n
     }
 
+    /** "Learn" from the app's own screen: time to switch to the radio app,
+     *  then the overlay goes over whatever is in front. */
+    fun learnLater() {
+        log(getString(R.string.log_learn_wait, LEARN_DELAY_S))
+        main.postDelayed({ learn() }, LEARN_DELAY_S * 1000L)
+    }
+
     /** "Learn" from the notification: teach the foreground app's PTT button. */
     private fun learn() {
         val acc = PttAccessibilityService.instance
@@ -399,6 +406,7 @@ class BridgeService : Service() {
         const val CHANNEL = "bridge"
         const val ACTION_STOP = "ovh.adan.pttbridge.STOP"
         const val ACTION_LEARN = "ovh.adan.pttbridge.LEARN"
+        const val LEARN_DELAY_S = 5
 
         /* PTT intents seen in other apps' receivers (DVSwitch, EchoLink,
            VoxDMR listen to them too), sent in the "nothing known" case. */

@@ -51,8 +51,10 @@
     <string name="access_off">Accessibility service: OFF (needed to know the app in front and to press screen buttons)</string>
     <string name="access_open">Open accessibility settings</string>
     <string name="taught_title">Taught screen buttons</string>
-    <string name="taught_none">None yet. Open the radio app, pull down the notification and tap "Learn PTT button", then tap its PTT button.</string>
+    <string name="taught_none">None yet. Tap the button above and open the radio app, or pull down the notification and tap "Learn PTT button" with the radio app in front. Then tap its PTT button on the blue layer.</string>
     <string name="forget">Forget</string>
     <string name="manual_title">Manual mode</string>
     <string name="access_desc">Lets PTT Bridge know which app is in the foreground and press a radio app\'s on-screen PTT button while the mic\'s PTT is held. It does not read screen content.</string>
+    <string name="learn_button">Learn a PTT button (then open the radio app within 5 s)</string>
+    <string name="log_learn_wait">open the radio app: learning its PTT button in %d s</string>
 </resources>
