@@ -61,4 +61,6 @@
     <string name="add_manual">Add an app by hand</string>
     <string name="add_manual_hint">Screen point of its PTT button, in pixels. To read it: Developer options › Pointer location, then touch the button.</string>
     <string name="open_radio">Open a radio app</string>
+    <string name="bt_mic_tx">Bluetooth mic only while transmitting (TV / Chromecast)</string>
+    <string name="bt_mic_tx_hint">Experimental, for Android TV: received audio as music (A2DP), call channel only while the PTT is held. ⚠ On a Chromecast with Google TV it does NOT work: closing the call channel crashes its audio service.</string>
 </resources>

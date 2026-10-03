@@ -61,4 +61,6 @@
     <string name="add_manual">Añadir una app a mano</string>
     <string name="add_manual_hint">Punto de la pantalla de su botón de PTT, en píxeles. Para leerlo: Opciones de desarrollador › Ubicación del puntero, y toca el botón.</string>
     <string name="open_radio">Abrir app de radio</string>
+    <string name="bt_mic_tx">Micro Bluetooth solo al transmitir (tele / Chromecast)</string>
+    <string name="bt_mic_tx_hint">Experimental, para Android TV: audio recibido como música (A2DP) y canal de llamada solo mientras pulsas el PTT. ⚠ En un Chromecast con Google TV NO funciona: al cerrar el canal de llamada se cuelga su servicio de audio.</string>
 </resources>

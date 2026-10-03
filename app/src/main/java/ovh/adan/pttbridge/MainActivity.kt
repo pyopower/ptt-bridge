@@ -129,6 +129,12 @@ class MainActivity : Activity(), BridgeService.Listener {
             isChecked = prefs.reclaim
             setOnCheckedChangeListener { _, on -> prefs.reclaim = on }
         })
+        col.addView(CheckBox(this).apply {
+            setText(R.string.bt_mic_tx)
+            isChecked = prefs.btMicOnTx
+            setOnCheckedChangeListener { _, on -> prefs.btMicOnTx = on; BridgeService.instance?.routeIdle() }
+        })
+        col.addView(small(R.string.bt_mic_tx_hint))
         col.addView(Button(this).apply {
             setText(R.string.test)
             setOnClickListener { BridgeService.instance?.test() }

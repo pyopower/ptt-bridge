@@ -2,7 +2,7 @@ package ovh.adan.pttbridge
 
 import android.content.Context
 
-class Prefs(c: Context) {
+class Prefs(private val c: Context) {
     private val sp = c.getSharedPreferences("bridge", Context.MODE_PRIVATE)
 
     /** DVSwitch comes enabled: it is what the bridge was born for. */
@@ -57,6 +57,13 @@ class Prefs(c: Context) {
     fun forgetPoint(pkg: String) = sp.edit().remove("pt_$pkg").apply()
     fun taughtApps(): List<String> =
         sp.all.keys.filter { it.startsWith("pt_") }.map { it.removePrefix("pt_") }.sorted()
+
+    /** Bluetooth mic only while transmitting (call channel closed when idle).
+     *  OFF by default: on a Chromecast with Google TV closing the call channel
+     *  hangs its audio HAL and audioserver restarts (7 s without sound). */
+    var btMicOnTx: Boolean
+        get() = sp.getBoolean("bt_mic_tx", false)
+        set(v) = sp.edit().putBoolean("bt_mic_tx", v).apply()
 
     var on: Boolean
         get() = sp.getBoolean("on", true)

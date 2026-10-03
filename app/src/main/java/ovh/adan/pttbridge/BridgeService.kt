@@ -52,6 +52,7 @@ class BridgeService : Service() {
         instance = this
         prefs = Prefs(this)
         root = RootInput(prefs)
+        registerReceiver(scoUp, android.content.IntentFilter(android.media.AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED))
         createChannel()
         startInForeground()
         openSession()
@@ -78,6 +79,8 @@ class BridgeService : Service() {
         try { session?.release() } catch (_: Exception) {}
         session = null
         stopSilence()
+        try { unregisterReceiver(scoUp) } catch (_: Exception) {}
+        if (btMic()) try { am.clearCommunicationDevice() } catch (_: Exception) {}
         root.shutdown()
         instance = null
         log(getString(R.string.log_stopped))
@@ -130,9 +133,59 @@ class BridgeService : Service() {
     private var via = Via.MANUAL
     private var viaTarget: Target? = null
 
+    // ------------------------------------------- Bluetooth mic only on TX ---
+    /* For Android TV / Chromecast. Its audio system cannot play CALL audio
+       (SCO) to a Bluetooth headset, only music (A2DP); and while the call
+       channel is open, A2DP is suspended. DVSwitch opens the call channel as
+       soon as its audio starts (startBluetoothSco, whatever its settings), so
+       nothing was heard. With DVSwitch's "Voice Call" OFF its received audio is
+       music: the bridge keeps the call channel CLOSED while idle (the most recent
+       communication-device request wins, so ours overrides DVSwitch's) and opens
+       it only while the PTT is held, so the radio app records from the headset
+       mic. The PTT is handed over once the call channel is up (or after 1.5 s). */
+    private val am by lazy { getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
+    private var pendingPress = false
+    private val scoUp = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) {
+            val st = i.getIntExtra(android.media.AudioManager.EXTRA_SCO_AUDIO_STATE, -1)
+            if (st == android.media.AudioManager.SCO_AUDIO_STATE_CONNECTED && pendingPress) {
+                main.removeCallbacks(pressNow); pressNow.run()
+            }
+        }
+    }
+    private val pressNow = Runnable { if (pendingPress) { pendingPress = false; doPress() } }
+
+    private fun btMic() = prefs.btMicOnTx && Build.VERSION.SDK_INT >= 31
+
+    private fun commDevice(type: Int): android.media.AudioDeviceInfo? =
+        if (Build.VERSION.SDK_INT >= 31) am.availableCommunicationDevices.firstOrNull { it.type == type } else null
+
+    /** Idle: call channel closed, so the radio app's audio plays as music (A2DP). */
+    fun routeIdle() {
+        if (!btMic() || pressed) return
+        val d = commDevice(android.media.AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+            ?: commDevice(android.media.AudioDeviceInfo.TYPE_HDMI) ?: return
+        try { if (am.communicationDevice?.id != d.id) am.setCommunicationDevice(d) } catch (_: Exception) {}
+    }
+
+    /** TX: open the call channel so the radio app records from the headset mic. */
+    private fun routeTx(): Boolean {
+        val sco = commDevice(android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO) ?: return false
+        return try { am.setCommunicationDevice(sco) } catch (_: Exception) { false }
+    }
+
     private fun press() {
         if (pressed) return
         pressed = true
+        if (btMic() && routeTx()) {
+            pendingPress = true
+            main.postDelayed(pressNow, 1500)
+            return
+        }
+        doPress()
+    }
+
+    private fun doPress() {
         tPressed = System.currentTimeMillis()
         val what = if (prefs.universal) pressUniversal() else {
             via = Via.MANUAL
@@ -149,6 +202,12 @@ class BridgeService : Service() {
     private fun release(why: String) {
         if (!pressed) return
         pressed = false
+        if (pendingPress) {                  // released before the call channel came up
+            pendingPress = false; main.removeCallbacks(pressNow)
+            main.postDelayed({ routeIdle() }, 300)
+            return
+        }
+        main.postDelayed({ routeIdle() }, 400)   // let the radio app finish its TX first
         main.removeCallbacks(timeout)
         when (via) {
             Via.APP -> viaTarget?.let { send(it, false) }
@@ -285,6 +344,7 @@ class BridgeService : Service() {
     private val reclaimer = object : Runnable {
         override fun run() {
             if (prefs.reclaim) reclaimButtons()
+            routeIdle()                      // DVSwitch reopens the call channel on reconnect
             main.postDelayed(this, if (pressed) RECLAIM_TX_MS else RECLAIM_MS)
         }
     }
