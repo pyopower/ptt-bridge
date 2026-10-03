@@ -125,8 +125,12 @@ Measured with `btmon` on Linux and on Android:
 ## Android TV
 
 Works on Android TV too (tested on a Chromecast with Google TV, Android TV 14):
-the Abbree pairs as speaker **and microphone** (hands-free profile), its PTT
-reaches the bridge, and DVSwitch Mobile transmitted with it. The bridge shows
+the Abbree pairs with the hands-free profile, its PTT reaches the bridge and
+DVSwitch Mobile transmits with the Abbree's **microphone** (turn on DVSwitch's
+*Voice Call* audio source). **But the Chromecast does not play call audio to a
+Bluetooth headset**: the received audio is routed to it and never comes out (its
+audio system lacks that path; it even crashed once while trying). So on a
+Chromecast the Abbree works as mic + PTT, not as speaker. The bridge shows
 up in the TV's app list, and its screen has an *Open a radio app* row, because
 phone apps like DVSwitch are not listed in the TV launcher. Install the APKs
 with adb; turn on the accessibility service from adb or Settings ›
