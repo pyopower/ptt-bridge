@@ -64,6 +64,10 @@ class BridgeService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        if (intent?.action == ACTION_LEARN) {
+            learn()
+            return START_STICKY
+        }
         reclaimButtons()
         return START_STICKY
     }
@@ -120,12 +124,21 @@ class BridgeService : Service() {
     var pressed = false; private set
     private var tPressed = 0L
 
+    /* How the current press was sent, so the release goes the same way even if
+       the foreground app changed in between. */
+    private enum class Via { APP, TOUCH, ROOT, ALL, MANUAL }
+    private var via = Via.MANUAL
+    private var viaTarget: Target? = null
+
     private fun press() {
         if (pressed) return
         pressed = true
         tPressed = System.currentTimeMillis()
-        val n = broadcast(true)
-        log(getString(R.string.log_down, n))
+        val what = if (prefs.universal) pressUniversal() else {
+            via = Via.MANUAL
+            getString(R.string.log_apps, broadcastChecked(true))
+        }
+        log(getString(R.string.log_down, what))
         vibrate(30)
         main.removeCallbacks(timeout)
         main.postDelayed(timeout, prefs.timeoutS * 1000L)
@@ -137,7 +150,13 @@ class BridgeService : Service() {
         if (!pressed) return
         pressed = false
         main.removeCallbacks(timeout)
-        broadcast(false)
+        when (via) {
+            Via.APP -> viaTarget?.let { send(it, false) }
+            Via.TOUCH -> PttAccessibilityService.instance?.holdEnd()
+            Via.ROOT -> root.press(false)
+            Via.ALL -> sendAll(false)
+            Via.MANUAL -> broadcastChecked(false)
+        }
         val s = (System.currentTimeMillis() - tPressed) / 1000.0
         log(getString(R.string.log_up, why, s))
         notifyChange()
@@ -149,23 +168,98 @@ class BridgeService : Service() {
         release(getString(R.string.why_timeout, prefs.timeoutS))
     }
 
-    private fun broadcast(down: Boolean): Int {
+    /**
+     * UNIVERSAL MODE: pick the best method for the radio app in use.
+     * The radio app is the one in the foreground if it is one we know or were
+     * taught; otherwise (home screen, screen off) the last one used. Then:
+     *   1. it listens to a PTT intent  -> send it, addressed to that app
+     *      (works in the background and with the screen off);
+     *   2. it was taught its PTT button and is in front -> hold a finger on it
+     *      through the accessibility service (no root);
+     *   3. root mode is set and it is in front -> root key / screen point;
+     *   4. nothing known -> every PTT intent we know, to whoever listens.
+     */
+    private fun pressUniversal(): String {
+        // Screen off or locked: nothing is "in front" (the last app seen would
+        // still be remembered, and a held finger would land on the lock screen).
+        val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        val kg = getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
+        val usable = pm.isInteractive && !kg.isKeyguardLocked
+        val fg = if (usable) PttAccessibilityService.foreground else null
+        val fgIsRadio = fg != null && isRadio(fg)
+        if (fgIsRadio) prefs.lastRadio = fg
+        val app = if (fgIsRadio) fg else prefs.lastRadio
+        val inFront = app != null && app == fg
+        val name = app?.let { PttAccessibilityService.appLabel(this, it) }
+        val known = TARGETS.firstOrNull { it.pkg != null && it.pkg == app }
+        val point = app?.let { prefs.point(it) }
+        val acc = PttAccessibilityService.instance
+        when {
+            known != null -> {
+                via = Via.APP; viaTarget = known
+                send(known, true)
+                return getString(R.string.via_intent, name)
+            }
+            point != null && inFront && acc != null &&
+                acc.holdStart(point.first, point.second) -> {
+                via = Via.TOUCH
+                return getString(R.string.via_touch, name)
+            }
+            prefs.rootMode != RootInput.MODE_OFF && inFront -> {
+                via = Via.ROOT
+                root.press(true)
+                return getString(R.string.via_root, name)
+            }
+            else -> {
+                via = Via.ALL
+                sendAll(true)
+                return getString(R.string.via_all)
+            }
+        }
+    }
+
+    private fun isRadio(pkg: String) =
+        TARGETS.any { it.pkg == pkg } || prefs.point(pkg) != null
+
+    private fun intent(action: String, pkg: String?) = Intent(action)
+        // FOREGROUND = the fast broadcast queue. Without it DVSwitch got the
+        // PTT half a second late.
+        .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES or Intent.FLAG_RECEIVER_FOREGROUND)
+        // Since Android 8 an implicit broadcast does not reach receivers
+        // declared in a manifest (EchoLink's are): known apps get it
+        // addressed to their package, which reaches both kinds.
+        .apply { if (pkg != null) setPackage(pkg) }
+
+    private fun send(t: Target, down: Boolean) =
+        sendBroadcast(intent(if (down) t.down else t.up, t.pkg))
+
+    /** Every PTT intent we know, implicit, for whatever app listens. */
+    private fun sendAll(down: Boolean) {
+        for (t in TARGETS) sendBroadcast(intent(if (down) t.down else t.up, null))
+        for ((d, u) in EXTRA_INTENTS) sendBroadcast(intent(if (down) d else u, null))
+    }
+
+    /** Manual mode: the ticked apps, plus root mode if set. */
+    private fun broadcastChecked(down: Boolean): Int {
         var n = 0
         for (t in TARGETS) {
             if (!prefs.enabled(t.key)) continue
-            // FOREGROUND = the fast broadcast queue. Without it DVSwitch got
-            // the PTT half a second late.
-            val i = Intent(if (down) t.down else t.up)
-                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES or Intent.FLAG_RECEIVER_FOREGROUND)
-            // Since Android 8 an implicit broadcast does not reach receivers
-            // declared in a manifest (EchoLink's are), so apps we know get it
-            // addressed to their package, which reaches both kinds.
-            if (t.pkg != null) i.setPackage(t.pkg)
-            sendBroadcast(i)
+            send(t, down)
             n++
         }
         n += root.press(down)
         return n
+    }
+
+    /** "Learn" from the notification: teach the foreground app's PTT button. */
+    private fun learn() {
+        val acc = PttAccessibilityService.instance
+        val fg = PttAccessibilityService.foreground
+        when {
+            acc == null -> log(getString(R.string.log_need_access))
+            fg == null -> log(getString(R.string.log_no_app))
+            else -> acc.startLearning(fg)
+        }
     }
 
     // --------------------------------------------------- keeping the keys ---
@@ -198,6 +292,9 @@ class BridgeService : Service() {
 
     /** Error of the root shell, if any, for the screen. */
     val rootError: String? get() = root.error
+
+    /** Repaint the notification (mode changed on the screen). */
+    fun refresh() = notifyChange()
 
     /** "Test" button: a 1 s press through the same path as the mic. */
     fun test() {
@@ -256,16 +353,24 @@ class BridgeService : Service() {
             PendingIntent.FLAG_IMMUTABLE)
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, CHANNEL)
                 else @Suppress("DEPRECATION") Notification.Builder(this)
-        val to = (TARGETS.filter { prefs.enabled(it.key) }.map { it.name(this) } +
+        val to = if (prefs.universal) getString(R.string.notif_universal)
+            else (TARGETS.filter { prefs.enabled(it.key) }.map { it.name(this) } +
                   listOfNotNull(if (prefs.rootMode != RootInput.MODE_OFF) "root" else null))
             .joinToString(", ")
             .ifEmpty { getString(R.string.notif_none) }
-        return b.setSmallIcon(android.R.drawable.ic_btn_speak_now)
+        b.setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentTitle(getString(if (pressed) R.string.notif_tx else R.string.notif_active))
             .setContentText("PTT → $to")
             .setContentIntent(open)
             .setOngoing(true)
-            .build()
+        if (prefs.universal) {
+            val learn = PendingIntent.getService(this, 1,
+                Intent(this, BridgeService::class.java).setAction(ACTION_LEARN),
+                PendingIntent.FLAG_IMMUTABLE)
+            @Suppress("DEPRECATION")
+            b.addAction(Notification.Action.Builder(0, getString(R.string.notif_learn), learn).build())
+        }
+        return b.build()
     }
 
     private fun startInForeground() {
@@ -293,6 +398,15 @@ class BridgeService : Service() {
         const val TAG = "pttbridge"
         const val CHANNEL = "bridge"
         const val ACTION_STOP = "ovh.adan.pttbridge.STOP"
+        const val ACTION_LEARN = "ovh.adan.pttbridge.LEARN"
+
+        /* PTT intents seen in other apps' receivers (DVSwitch, EchoLink,
+           VoxDMR listen to them too), sent in the "nothing known" case. */
+        val EXTRA_INTENTS = listOf(
+            "android.intent.action.PTT_DOWN" to "android.intent.action.PTT_UP",
+            "com.sonim.intent.action.PTT_KEY_DOWN" to "com.sonim.intent.action.PTT_KEY_UP",
+            "com.runbo.poc.key.down" to "com.runbo.poc.key.up",
+        )
         const val RECLAIM_MS = 3000L
         const val RECLAIM_TX_MS = 700L
 

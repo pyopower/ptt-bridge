@@ -15,7 +15,7 @@
     <string name="notif_none">ninguna app</string>
     <string name="log_started">puente en marcha</string>
     <string name="log_stopped">puente parado</string>
-    <string name="log_down">PTT abajo → %d app(s)</string>
+    <string name="log_down">PTT abajo → %s</string>
     <string name="log_up">PTT arriba (%1$s, %2$.1f s)</string>
     <string name="why_release">soltado</string>
     <string name="why_stop">parada del puente</string>
@@ -32,4 +32,27 @@
     <string name="root_x">X (px)</string>
     <string name="root_y">Y (px)</string>
     <string name="root_keys">BlueDV toma como PTT la 27 (CÁMARA), la 131 (F1) o la 132 (F2). En Peanut y Mumla, configura su tecla de PTT y pulsa el PTT del micro cuando la pidan. Para el punto de pantalla, activa Opciones de desarrollador › Ubicación del puntero y lee X/Y sobre el botón de PTT de la app de radio.</string>
+    <string name="log_apps">%d app(s)</string>
+    <string name="via_intent">%s (intent)</string>
+    <string name="via_touch">%s (botón de pantalla)</string>
+    <string name="via_root">%s (root)</string>
+    <string name="via_all">todos los intents de PTT (ninguna app conocida)</string>
+    <string name="log_need_access">activa antes el servicio de accesibilidad</string>
+    <string name="log_no_app">abre antes la app de radio</string>
+    <string name="notif_universal">modo universal</string>
+    <string name="notif_learn">Aprender botón PTT</string>
+    <string name="log_learned">aprendido el botón PTT de %1$s en %2$d,%3$d</string>
+    <string name="learn_overlay">Toca el botón de PTT de %s</string>
+    <string name="mode_title">Modo</string>
+    <string name="mode_universal">Universal (recomendado)</string>
+    <string name="mode_manual">Manual</string>
+    <string name="universal_hint">Universal: el puente mira qué app de radio tienes delante (o la última que usaste) y elige la mejor forma: su intent de PTT si lo tiene (funciona con la pantalla apagada), o mantener pulsado su botón de PTT de la pantalla si se lo enseñaste, sin root. Para las apps que no conoce, manda todos los intents de PTT conocidos.</string>
+    <string name="access_on">Servicio de accesibilidad: ACTIVADO</string>
+    <string name="access_off">Servicio de accesibilidad: DESACTIVADO (hace falta para saber qué app hay delante y pulsar botones de pantalla)</string>
+    <string name="access_open">Abrir ajustes de accesibilidad</string>
+    <string name="taught_title">Botones de pantalla aprendidos</string>
+    <string name="taught_none">Ninguno todavía. Abre la app de radio, baja la notificación y toca "Aprender botón PTT", y luego toca su botón de PTT.</string>
+    <string name="forget">Olvidar</string>
+    <string name="manual_title">Modo manual</string>
+    <string name="access_desc">Permite a PTT Puente saber qué app tienes delante y pulsar el botón de PTT de la pantalla de una app de radio mientras mantienes el PTT del micro. No lee el contenido de la pantalla.</string>
 </resources>

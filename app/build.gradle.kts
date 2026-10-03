@@ -11,8 +11,8 @@ android {
         applicationId = "ovh.adan.pttbridge"
         minSdk = 21          // MediaSession
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     // Release signing: the keystore and its passwords live outside the repo

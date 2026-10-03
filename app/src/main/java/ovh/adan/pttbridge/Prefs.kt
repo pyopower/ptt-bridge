@@ -37,6 +37,27 @@ class Prefs(c: Context) {
         get() = sp.getInt("touch_y", 1800)
         set(v) = sp.edit().putInt("touch_y", v).apply()
 
+    /** Universal mode (default) or the manual one (ticked apps + root). */
+    var universal: Boolean
+        get() = sp.getBoolean("universal", true)
+        set(v) = sp.edit().putBoolean("universal", v).apply()
+
+    /** Last radio app seen in the foreground: the target when none is. */
+    var lastRadio: String?
+        get() = sp.getString("last_radio", null)
+        set(v) = sp.edit().putString("last_radio", v).apply()
+
+    /** PTT button points taught per app: "pt_<package>" = "x,y". */
+    fun point(pkg: String): Pair<Int, Int>? {
+        val v = sp.getString("pt_$pkg", null) ?: return null
+        val p = v.split(",")
+        return if (p.size == 2) Pair(p[0].toInt(), p[1].toInt()) else null
+    }
+    fun setPoint(pkg: String, x: Int, y: Int) = sp.edit().putString("pt_$pkg", "$x,$y").apply()
+    fun forgetPoint(pkg: String) = sp.edit().remove("pt_$pkg").apply()
+    fun taughtApps(): List<String> =
+        sp.all.keys.filter { it.startsWith("pt_") }.map { it.removePrefix("pt_") }.sorted()
+
     var on: Boolean
         get() = sp.getBoolean("on", true)
         set(v) = sp.edit().putBoolean("on", v).apply()
