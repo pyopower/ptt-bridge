@@ -58,6 +58,7 @@ class BridgeService : Service() {
         openSession()
         log(getString(R.string.log_started))
         main.postDelayed(reclaimer, RECLAIM_MS)
+        heartbeat(true)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -76,6 +77,7 @@ class BridgeService : Service() {
     override fun onDestroy() {
         main.removeCallbacksAndMessages(null)
         if (pressed) release(getString(R.string.why_stop))
+        heartbeat(false)
         try { session?.release() } catch (_: Exception) {}
         session = null
         stopSilence()
@@ -344,6 +346,7 @@ class BridgeService : Service() {
     private val reclaimer = object : Runnable {
         override fun run() {
             if (prefs.reclaim) reclaimButtons()
+            heartbeat(true)
             routeIdle()                      // DVSwitch reopens the call channel on reconnect
             main.postDelayed(this, if (pressed) RECLAIM_TX_MS else RECLAIM_MS)
         }
@@ -400,6 +403,15 @@ class BridgeService : Service() {
             Log.w(TAG, "could not reclaim the media buttons", e)
             stopSilence()
         }
+    }
+
+    /* Radio apps that catch the speaker-mic buttons themselves (RadioVampiros)
+       would fight us for them and presses would get lost. While we run we tell
+       them so every few seconds; they then leave the buttons to us and take the
+       PTT from our intents. */
+    private fun heartbeat(alive: Boolean) {
+        for (pkg in COOPERATIVE)
+            try { sendBroadcast(Intent(if (alive) ACTION_ALIVE else ACTION_GONE).setPackage(pkg)) } catch (_: Exception) {}
     }
 
     private fun stopSilence() {
@@ -467,6 +479,10 @@ class BridgeService : Service() {
         const val ACTION_STOP = "ovh.adan.pttbridge.STOP"
         const val ACTION_LEARN = "ovh.adan.pttbridge.LEARN"
         const val LEARN_DELAY_S = 5
+        const val ACTION_ALIVE = "ovh.adan.pttbridge.ALIVE"
+        const val ACTION_GONE = "ovh.adan.pttbridge.GONE"
+        /** Apps that read the speaker-mic buttons themselves and step aside on our heartbeat. */
+        val COOPERATIVE = listOf("ovh.adan.dmr.rv")
 
         /* PTT intents seen in other apps' receivers (DVSwitch, EchoLink,
            VoxDMR listen to them too), sent in the "nothing known" case. */
@@ -494,6 +510,8 @@ class BridgeService : Service() {
             Target("voxdmr", "VoxDMR", 0, "com.jcalado.voxdmr",
                 "com.voxdmr.ptt.DOWN", "com.voxdmr.ptt.UP"),
             Target("zello", "Zello", 0, "com.loudtalks", "com.zello.ptt.down", "com.zello.ptt.up"),
+            Target("radiovampiros", "RadioVampiros", 0, "ovh.adan.dmr.rv",
+                "ovh.adan.dmr.rv.PTT_DOWN", "ovh.adan.dmr.rv.PTT_UP"),
             Target("poc", "", R.string.target_poc, null,
                 "android.intent.action.PTT.down", "android.intent.action.PTT.up"),
         )
