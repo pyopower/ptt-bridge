@@ -19,7 +19,7 @@ and release:
 | EchoLink | `com.echolink.ptt.down` | `com.echolink.ptt.up` |
 | VoxDMR | `com.voxdmr.ptt.DOWN` | `com.voxdmr.ptt.UP` |
 | Zello | `com.zello.ptt.down` | `com.zello.ptt.up` |
-| RadioVampiros | `ovh.adan.dmr.rv.PTT_DOWN` | `ovh.adan.dmr.rv.PTT_UP` |
+| Nodus | `ovh.adan.dmr.rv.PTT_DOWN` | `ovh.adan.dmr.rv.PTT_UP` |
 | Generic POC apps | `android.intent.action.PTT.down` | `android.intent.action.PTT.up` |
 
 Broadcasts to known apps are addressed to their package: since Android 8 an
@@ -71,7 +71,7 @@ simulating the mic's keys over adb (`cmd media_session dispatch fast-forward` /
 | EchoLink 1.8.10 | ✅ | own intent, manifest receiver (setting "pttButton", on by default) | ✅ receives DOWN/UP (`startTx()`/`stopTX()`), even with the app closed |
 | VoxDMR 0.15.3 | ✅ | own intent (also generic and Zello's). Set its PTT mode to **Hold to transmit**: in *hybrid* a short press latches the TX and ignores the release | ✅ on the air with the Abbree (TG 214) |
 | Zello | ✅ | `com.zello.ptt.*` (documented by Zello) | not tested |
-| RadioVampiros 1.0.35 | ✅ | own intent. RadioVampiros can also read the Abbree by itself; while PTT Bridge runs it gets a heartbeat (`ovh.adan.pttbridge.ALIVE`) and leaves the buttons to the bridge, so the two never fight over them | ✅ on the air with the Abbree read by RadioVampiros itself; through the bridge too |
+| Nodus 1.0.35 | ✅ | own intent. Nodus can also read the Abbree by itself; while PTT Bridge runs it gets a heartbeat (`ovh.adan.pttbridge.ALIVE`) and leaves the buttons to the bridge, so the two never fight over them | ✅ on the air with the Abbree read by RadioVampiros itself; through the bridge too |
 | BlueDV AMBE 1.0.119 | ✅ root | physical key in the foreground: 27 (CAMERA), 131 (F1), 132 (F2), 134, 135, 139, 142, 228–230, 261, 276, 278, 280, 294, 300, 301, 305 | ✅ root key mode, code 27: "PTT ON" 73 ms after press, "PTT OFF" 24 ms after release |
 | Peanut 1.81 | ✅ root | key learned in its setup, in the foreground | not tested (same mechanism as BlueDV) |
 | Mumla 3.7.3 (Mumble) | ✅ | on-screen PTT button (set *Transmission mode: Push to talk*), taught in the universal mode; or root key | ✅ on the air with the Abbree, **without root** |

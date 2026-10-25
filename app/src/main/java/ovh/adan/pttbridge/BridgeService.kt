@@ -405,7 +405,7 @@ class BridgeService : Service() {
         }
     }
 
-    /* Radio apps that catch the speaker-mic buttons themselves (RadioVampiros)
+    /* Radio apps that catch the speaker-mic buttons themselves (Nodus)
        would fight us for them and presses would get lost. While we run we tell
        them so every few seconds; they then leave the buttons to us and take the
        PTT from our intents. */
@@ -510,7 +510,7 @@ class BridgeService : Service() {
             Target("voxdmr", "VoxDMR", 0, "com.jcalado.voxdmr",
                 "com.voxdmr.ptt.DOWN", "com.voxdmr.ptt.UP"),
             Target("zello", "Zello", 0, "com.loudtalks", "com.zello.ptt.down", "com.zello.ptt.up"),
-            Target("radiovampiros", "RadioVampiros", 0, "ovh.adan.dmr.rv",
+            Target("radiovampiros", "Nodus", 0, "ovh.adan.dmr.rv",   // id kept: saved selections
                 "ovh.adan.dmr.rv.PTT_DOWN", "ovh.adan.dmr.rv.PTT_UP"),
             Target("poc", "", R.string.target_poc, null,
                 "android.intent.action.PTT.down", "android.intent.action.PTT.up"),
